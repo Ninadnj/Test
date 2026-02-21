@@ -18,6 +18,8 @@ export default async function ProfilePage() {
     }
   });
 
+  if (!dbUser) return redirect("/auth");
+
   return (
     <div className="max-w-3xl mx-auto p-6 pb-20 md:pb-6">
       <div className="flex justify-between items-center mb-8">

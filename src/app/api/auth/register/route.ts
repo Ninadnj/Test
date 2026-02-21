@@ -7,31 +7,28 @@ export async function POST(req: Request) {
         const { email, password, name, nickname } = await req.json();
 
         if (!email || !password || !name) {
-            return new NextResponse("Missing Info", { status: 400 });
+            return new NextResponse("Missing email, password, or name", { status: 400 });
         }
 
-        const exists = await prisma.user.findUnique({
-            where: { email }
-        });
-
+        const exists = await prisma.user.findUnique({ where: { email } });
         if (exists) {
             return new NextResponse("Email Already Exists", { status: 400 });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 12);
+        const passwordHash = await bcrypt.hash(password, 12);
 
         const user = await prisma.user.create({
             data: {
                 email,
                 name,
                 nickname: nickname || undefined,
-                passwordHash: hashedPassword,
+                passwordHash,
             }
         });
 
-        return NextResponse.json(user);
-    } catch (error: unknown) {
-        console.error(error, "REGISTRATION_ERROR");
+        return NextResponse.json({ id: user.id, email: user.email, name: user.name });
+    } catch (_error) {
+        console.error("REGISTRATION_ERROR", _error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
